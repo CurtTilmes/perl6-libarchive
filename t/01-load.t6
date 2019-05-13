@@ -1,0 +1,9 @@
+use Test;
+
+plan 2;
+
+use-ok "Libarchive::Read";
+
+use-ok "Libarchive::Write";
+
+done-testing;

@@ -1,0 +1,119 @@
+use Test;
+use Libarchive::Filter :all;
+use File::Temp;
+
+plan 13;
+
+my $buf;
+
+subtest 'encode',
+{
+    plan 1;
+    ok $buf = archive-encode('Some content', filter => 'gzip'),
+        'encode';
+}
+
+subtest 'decode to str',
+{
+    plan 2;
+    ok my $content = archive-decode($buf), 'decode to str';
+    is $content, 'Some content', 'content matches';
+}
+
+subtest 'decode to buf',
+{
+    plan 2;
+    ok my $output = archive-decode($buf, Buf.new), 'decode to buf';
+    is 'Some content'.encode, $output, 'content matches';
+}
+
+subtest 'decode to file IO::Path',
+{
+    plan 2;
+    my $filename = tempdir.IO.add('testing');
+    ok archive-decode($buf, $filename), 'decode to IO::Path';
+    is $filename.slurp, 'Some content', 'content matches';
+}
+
+subtest 'decode to Channel',
+{
+    plan 2;
+    my $channel = Channel.new;
+    my $content = '';
+    my $p = start loop {
+        try my $buf = $channel.receive;
+        last if $!;
+        $content ~= $buf.decode
+    }
+    ok archive-decode($buf, $channel), 'decode to Channel';
+    await $p;
+    is $content, 'Some content', 'content matches';
+}
+
+subtest 'decode to Supplier',
+{
+    plan 2;
+    my $supplier = Supplier.new;
+    my $content = '';
+    $supplier.Supply.tap({$content ~= .decode});
+    ok archive-decode($buf, $supplier), 'decode to Supplier';
+    is $content, 'Some content', 'content matches';
+}
+
+subtest 'decode to IO::Handle',
+{
+    plan 2;
+    my $filename = tempdir.IO.add('testing');
+    ok archive-decode($buf, $filename.open(:w:bin)), 'decode to IO::Handle';
+    is $filename.slurp, 'Some content', 'content matches';
+}
+
+subtest 'gzip',
+{
+    plan 3;
+    ok gzip('Gzip content', my $buf = Buf.new), 'gzip';
+    ok my $content = gunzip($buf), 'gunzip';
+    is $content, 'Gzip content', 'content matches';
+}
+
+subtest 'compress',
+{
+    plan 3;
+    ok compress('Compress content', my $buf = Buf.new), 'compress';
+    ok my $content = uncompress($buf), 'uncompress';
+    is $content, 'Compress content', 'content matches';
+}
+
+subtest 'bzip2',
+{
+    plan 3;
+    ok bzip2('Bzip2 content', my $buf = Buf.new), 'bzip2';
+    ok my $content = bunzip2($buf), 'bunzip2';
+    is $content, 'Bzip2 content', 'content matches';
+}
+
+subtest 'lz4',
+{
+    plan 3;
+    ok lz4('lz4 content', my $buf = Buf.new), 'lz4';
+    ok my $content = unlz4($buf), 'unlz4';
+    is $content, 'lz4 content', 'content matches';
+}
+
+subtest 'uuencode',
+{
+    plan 3;
+    ok uuencode('uu content', my $buf = Buf.new), 'uuencode';
+    ok my $content = uudecode($buf), 'uudecode';
+    is $content, 'uu content', 'content matches';
+}
+
+subtest 'lzma',
+{
+    plan 3;
+    ok lzma('lzma content', my $buf = Buf.new), 'lzma';
+    ok my $content = unlzma($buf), 'unlzma';
+    is $content, 'lzma content', 'content matches';
+}
+
+done-testing;

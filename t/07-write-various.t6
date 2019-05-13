@@ -1,0 +1,78 @@
+use Test;
+use Libarchive::Simple;
+
+my Buf $buf .= new;
+
+plan 2;
+
+subtest 'write archive',
+{
+    plan 11;
+
+    ok my $archive = archive-write($buf, format => 'paxr'), 'open writer';
+
+    ok $archive.add($*PROGRAM, :pathname('myself')),
+        'Add filesystem file';
+
+    ok $archive.add(~$*PROGRAM, :pathname('myselfstr')),
+        'Add filesystem file as str';
+
+    ok $archive.write('afile', "This is afile\n"), 'Write a file';
+
+    ok $archive.write('bfile', $*PROGRAM), 'Write from IO::Path';
+
+    ok $archive.write('cfile', "This is cfile\n".encode),
+        'Write a file from a Blob';
+
+    ok $archive.write('dfile', $*PROGRAM.open(:bin), size => 15),
+        'Write from an IO::Handle';
+
+    ok $archive.mkdir('adir'), 'make a directory';
+
+    ok $archive.symlink('link1', 'afile'), 'symlink';
+
+    ok $archive.symlink('link2', 'bfile'), 'symlink as pair';
+
+    ok $archive.close(), 'close writer';
+}
+
+subtest 'read archive',
+{
+    plan 27;
+
+    ok (my $archive := archive-slurp($buf)), 'slurp archive';
+
+#    note $archive;
+
+    is $archive<afile>, "This is afile\n", 'afile content';
+
+    ok $archive<bfile>.Str.starts-with('use Test'), 'bfile starts out right';
+
+    is $archive<bfile>.size, $*PROGRAM.s, 'bfile size right';
+
+    is $archive<cfile>, "This is cfile\n", 'cfile content';
+
+    is $archive<dfile>.size, 15, 'dfile size right';
+
+    ok $archive<dfile>.Str.starts-with('use Test'),
+        'dfile starts out right';
+
+    ok $archive<myselfstr>.Str.starts-with('use Test'),
+        'myselfstr starts out right';
+
+    is $archive<myselfstr>.size, $*PROGRAM.s, 'myselfstr size right';
+
+    for $archive<afile bfile cfile myself myselfstr link1 link2>
+    {
+        ok .is-file, "{.pathname} is a regular file";
+        nok .is-dir, "{.pathname} is not a directory";
+    }
+
+    nok $archive<adir/>.is-file, 'adir is not a file';
+    ok $archive<adir/>.is-dir, 'adir is a directory';
+
+    is $archive<link1>.symlink, 'afile', 'link1 link correct';
+    is $archive<link2>.symlink, 'bfile', 'link1 link correct';
+}
+
+done-testing;

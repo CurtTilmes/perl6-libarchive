@@ -1,0 +1,4 @@
+#!/usr/bin/env perl6
+use Libarchive::Filter :gzip;
+
+gunzip $*IN, $*OUT

@@ -1,0 +1,42 @@
+use Test;
+use Libarchive::Write;
+use Libarchive::Read;
+
+diag Libarchive.lib-version<details>;
+
+my Buf $buf .= new;
+
+my $content = "This is some content\n";
+
+plan 2;
+
+subtest 'write archive',
+{
+    plan 3;
+
+    isa-ok my $archive = Libarchive::Write.new($buf,
+                                               format => 'paxr',
+                                               filter => 'gzip'),
+        Libarchive::Write, 'open writer';
+
+    ok $archive.write('afile', $content), 'Write a file';
+
+    ok $archive.close(), 'close writer';
+}
+
+subtest 'read archive',
+{
+    plan 5;
+
+    ok (my $archive := Libarchive::Read.new($buf)), 'open reader';
+
+    for $archive
+    {
+        is .pathname, 'afile',               'pathname';
+        is .perm,     0o644,                 'perm';
+        is .size,     $content.encode.bytes, 'size';
+        is .content,  $content,              'content';
+    }
+}
+
+done-testing;

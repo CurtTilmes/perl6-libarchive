@@ -1,0 +1,28 @@
+use Test;
+use Libarchive::Simple;
+
+plan 11;
+
+my Buf $buf .= new;
+
+ok my $archive = archive-write($buf, format => 'paxr'), 'open writer';
+ok $archive.add($*PROGRAM, :pathname('myself')), 'add file';
+ok $archive.close(), 'close writer';
+
+ok ($archive := archive-slurp($buf)), 'slurp archive';
+
+is $archive<myself>, $*PROGRAM.IO.slurp, 'content matches';
+
+is $archive<myself>.data, $*PROGRAM.IO.slurp(:bin), 'binary data matches';
+
+ok $archive.write('afile', "Some content\n"), 'write a new file';
+
+ok $archive.mkdir('adir'), 'make a directory';
+
+ok $archive.symlink('adir/linked' => '../afile'), 'symlink';
+
+ok $archive.add($*PROGRAM, pathname => 'anotherself'), 'add filesystem file';
+
+is $archive<anotherself>, $*PROGRAM.IO.slurp, 'content matches';
+
+done-testing;

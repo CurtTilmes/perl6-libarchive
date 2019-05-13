@@ -1,0 +1,10 @@
+#!/usr/bin/env perl6
+
+use Libarchive::Simple;
+
+with archive-write('file.tar.gz'.IO.open(:w:bin), format => 'paxr') {
+    .write: 'afile', "This is some content\n";
+    .close
+}
+
+.put for archive-read('file.tar.gz'.IO.open);

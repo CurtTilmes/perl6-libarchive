@@ -1,0 +1,41 @@
+use Test;
+use Libarchive::Write;
+use Libarchive::Read;
+use File::Temp;
+
+my $filename = tempdir.IO.add('testing.tar.gz');
+
+my $content = "This is some content\n";
+
+plan 2;
+
+subtest 'write archive',
+{
+    plan 3;
+
+    isa-ok my $archive = Libarchive::Write.new($filename),
+        Libarchive::Write, 'open writer';
+
+    ok $archive.write('afile', $content), 'Write a file';
+
+    ok $archive.close(), 'close writer';
+}
+
+subtest 'read archive',
+{
+    plan 6;
+
+    isa-ok my $archive = Libarchive::Read.new(~$filename),
+        Libarchive::Read, 'open reader';
+
+    isa-ok my $file = $archive.read,
+        Libarchive::Entry::Read, 'read file';
+
+    is $file.pathname, 'afile', 'pathname';
+    is $file.size, $content.encode.bytes, 'size';
+    is $file.content, $content, 'content';
+
+    ok $archive.close(), 'close reader';
+}
+
+done-testing;
