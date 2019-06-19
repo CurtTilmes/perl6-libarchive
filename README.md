@@ -263,7 +263,7 @@ If you are writing to a stream, you _*must*_ specify a format:
 
 You can optionally specify one or more filters to use while writing.
 
-    Libarchive::Write.new('myfile', format => 'guntar',
+    Libarchive::Write.new('myfile', format => 'gnutar',
                                  filter => <gzip b64encode>);
 
 Multiple filters are built into a pipeline, so the order they are
