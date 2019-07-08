@@ -1,17 +1,13 @@
-language: perl6
-
-os:
-  - linux
-
-perl6:
-  - latest
-
-sudo: true
-
-before_script:
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get update            ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install libarchive-dev; fi
-
+dist: xenial
+os: linux
+language: generic
+env:
+  global:
+    - PATH=/opt/rakudo-pkg/bin:/opt/rakudo-pkg/share/perl6/site/bin:$PATH
+before_install:
+  - wget https://github.com/nxadm/rakudo-pkg/releases/download/v2019.03.1/rakudo-pkg-Ubuntu16.04_2019.03.1-01_amd64.deb
+  - sudo dpkg -i rakudo-pkg-Ubuntu16.04_2019.03.1-01_amd64.deb
+  - sudo apt-get -qq update
+  - sudo apt-get install libarchive13
 install:
-  - rakudobrew build zef
-  - zef install .
+  - zef install --deps-only --/test .
