@@ -1,0 +1,11 @@
+language: perl6
+
+os:
+  - linux
+
+perl6:
+  - latest
+
+install:
+  - rakudobrew build zef
+  - zef install .
