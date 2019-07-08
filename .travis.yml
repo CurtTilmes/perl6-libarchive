@@ -6,6 +6,12 @@ os:
 perl6:
   - latest
 
+sudo: true
+
+before_script:
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get update            ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install libarchive13; fi
+
 install:
   - rakudobrew build zef
   - zef install .
