@@ -5,6 +5,10 @@ and compression libarary.  This module provides a very composable high
 level interface to the library for reading, processing and writing
 archives of files.
 
+See [PHLPM Talk](http://curt.tilmes.org/2019-PHLPM-Libarchive) for
+some more description and examples of usage (mostly duplicates what is
+here).
+
 ## Simple, streaming archive reading
 
     use Libarchive::Simple;
