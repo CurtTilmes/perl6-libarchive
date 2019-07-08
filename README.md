@@ -455,3 +455,9 @@ from which the content will be read.
 Use `copy()` to read from an `archive-read()` or `archive-slurp()`
 sequence into a new archive.
 
+## LICENSE
+
+Copyright © 2019 United States Government as represented by the
+Administrator, National Aeronautics and Space Administration. No
+Copyright is claimed in the United States under Title 17, U.S. Code.
+All Other Rights Reserved.
