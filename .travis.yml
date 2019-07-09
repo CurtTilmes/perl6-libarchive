@@ -10,5 +10,5 @@ before_install:
   - sudo apt-get -qq update
   - sudo apt-get install libarchive13
 install:
+  - zef install . --deps-only --/test
   - zef install .
-
