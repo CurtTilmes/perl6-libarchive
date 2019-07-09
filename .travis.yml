@@ -10,6 +10,5 @@ before_install:
   - sudo apt-get -qq update
   - sudo apt-get install libarchive13
 install:
-  - zef install --deps-only --/depends --/build-depends --test-depends --/test .
-script:
-  - PERL6LIB=$PWD/lib prove -e perl6 -vr t/*.t6
+  - zef install .
+
